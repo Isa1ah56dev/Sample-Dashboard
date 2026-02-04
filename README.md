@@ -5,9 +5,9 @@
 This project is a **sample dashboard** built with HTML, CSS, and JavaScript.  
 It includes:
 
-- Active Users (randomized)
-- Sales Today (randomized)
-- Revenue (randomized)
+Active Users (randomized)
+Sales Today (randomized)
+Revenue (randomized)
 
 It updates automatically every 2 seconds to demonstrate dynamic data display.
 
