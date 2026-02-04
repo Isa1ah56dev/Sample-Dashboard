@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Isaiah's Sample Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        header { background: #2c3e50; color: white; padding: 1rem; text-align: center; }
+        .dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; padding: 2rem; }
+        .card { background: white; padding: 1rem 2rem; margin: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: 200px; text-align: center; }
+        .card h2 { margin: 0; font-size: 2rem; color: #2c3e50; }
+        .card p { margin: 0.5rem 0 0 0; color: #555; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sample Dashboard</h1>
+        <p>Example stats for demonstration purposes</p>
+    </header>
+
+    <div class="dashboard">
+        <div class="card">
+            <h2 id="users">0</h2>
+            <p>Active Users</p>
+        </div>
+        <div class="card">
+            <h2 id="sales">0</h2>
+            <p>Sales Today</p>
+        </div>
+        <div class="card">
+            <h2 id="revenue">$0</h2>
+            <p>Revenue</p>
+        </div>
+    </div>
+
+    <script>
+        // this generates random stats
+        function updateStats() {
+            document.getElementById('users').innerText = Math.floor(Math.random() * 500);
+            document.getElementById('sales').innerText = Math.floor(Math.random() * 200);
+            document.getElementById('revenue').innerText = '$' + (Math.random() * 1000).toFixed(2);
+        }
+
+        // this updates everything every 2 seconds
+        setInterval(updateStats, 2000);
+        updateStats();
+    </script>
+</body>
+</html>
