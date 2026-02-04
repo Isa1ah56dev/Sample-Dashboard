@@ -2,8 +2,6 @@
 
 ***!Disclaimer!***. All data displayed is **fake and randomly generated**. this is to **show examples of things like websites and tools that i can make.**.
 
-## Description
-
 This project is a **sample dashboard** built with HTML, CSS, and JavaScript.  
 It includes:
 
