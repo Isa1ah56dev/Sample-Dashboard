@@ -2,48 +2,650 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Isaiah's Sample Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
-        header { background: #2c3e50; color: white; padding: 1rem; text-align: center; }
-        .dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; padding: 2rem; }
-        .card { background: white; padding: 1rem 2rem; margin: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); width: 200px; text-align: center; }
-        .card h2 { margin: 0; font-size: 2rem; color: #2c3e50; }
-        .card p { margin: 0.5rem 0 0 0; color: #555; }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            color: #2c3e50;
+            padding: 1rem 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-weight: 500;
+            font-size: 1.5rem;
+        }
+        header p {
+            margin: 0.25rem 0 0 0;
+            font-weight: 300;
+            font-size: 0.9rem;
+        }
+        .user-info {
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 0.5rem;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tab-button:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+        .tab-button.active {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        .tab-content {
+            display: none;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .card {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid #3498db;
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .card h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .card:nth-child(2) { border-left-color: #2ecc71; }
+        .card:nth-child(3) { border-left-color: #e67e22; }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: 200px !important;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        .btn:hover {
+            background: linear-gradient(45deg, #2980b9, #21618c);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+        .btn.secondary {
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+        }
+        .btn.secondary:hover {
+            background: linear-gradient(45deg, #27ae60, #229954);
+        }
+        .btn.danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        .btn.danger:hover {
+            background: linear-gradient(45deg, #c0392b, #a93226);
+        }
+        .calendar {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .calendar h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+        }
+        .calendar-day {
+            padding: 0.5rem;
+            text-align: center;
+            border-radius: 6px;
+            background: #f8f9fa;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+        .calendar-day:hover {
+            background: #e9ecef;
+        }
+        .calendar-day.today {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+        }
+        .bank {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .bank h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .account-info {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .account-info h4 {
+            color: #2ecc71;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .account-info p {
+            color: #7f8c8d;
+            margin: 0.5rem 0 0 0;
+        }
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        .transaction span:first-child {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .transaction span:last-child {
+            font-weight: 500;
+            color: #e74c3c;
+        }
+        .transaction.positive span:last-child {
+            color: #2ecc71;
+        }
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 0.75rem;
+            }
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .tabs {
+                flex-direction: column;
+                padding: 0.25rem;
+            }
+            .tab-button {
+                padding: 0.5rem 1rem;
+            }
+            .calendar-grid {
+                font-size: 0.7rem;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Sample Dashboard</h1>
-        <p>Example stats for demonstration purposes</p>
+        <div>
+            <h1><i class="fas fa-chart-line"></i> Isaiah's Sample Dashboard</h1>
+            <p>Fake stats for demonstration purposes</p>
+        </div>
+        <div class="user-info"><i class="fas fa-user"></i> Guest</div>
     </header>
 
-    <div class="dashboard">
-        <div class="card">
-            <h2 id="users">0</h2>
-            <p>Active Users</p>
+    <div class="tabs">
+        <button class="tab-button active" onclick="showTab('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+        <button class="tab-button" onclick="showTab('calendar')"><i class="fas fa-calendar-alt"></i> Calendar</button>
+        <button class="tab-button" onclick="showTab('bank')"><i class="fas fa-university"></i> Bank</button>
+    </div>
+
+    <div id="dashboard" class="tab-content active">
+        <div class="dashboard">
+            <div class="card">
+                <h3><i class="fas fa-users"></i> Active Users</h3>
+                <canvas id="usersChart"></canvas>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-chart-pie"></i> Sales Distribution</h3>
+                <canvas id="salesChart"></canvas>
+            </div>
+            <div class="card">
+                <h3><i class="fas fa-dollar-sign"></i> Revenue ($)</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
         </div>
-        <div class="card">
-            <h2 id="sales">0</h2>
-            <p>Sales Today</p>
+
+        <div class="buttons">
+            <button class="btn" onclick="refreshCharts()"><i class="fas fa-sync"></i> Refresh</button>
+            <button class="btn secondary" onclick="showExportOptions()"><i class="fas fa-download"></i> Export</button>
+            <button class="btn danger" onclick="resetCharts()"><i class="fas fa-trash"></i> Reset</button>
         </div>
-        <div class="card">
-            <h2 id="revenue">$0</h2>
-            <p>Revenue</p>
+    </div>
+
+    <div id="calendar" class="tab-content">
+        <div class="calendar">
+            <h3><i class="fas fa-calendar-alt"></i> February 2026</h3>
+            <div class="calendar-grid">
+                <div class="calendar-day">Sun</div>
+                <div class="calendar-day">Mon</div>
+                <div class="calendar-day">Tue</div>
+                <div class="calendar-day">Wed</div>
+                <div class="calendar-day">Thu</div>
+                <div class="calendar-day">Fri</div>
+                <div class="calendar-day">Sat</div>
+                <div class="calendar-day"></div>
+                <div class="calendar-day"></div>
+                <div class="calendar-day"></div>
+                <div class="calendar-day"></div>
+                <div class="calendar-day">1</div>
+                <div class="calendar-day">2</div>
+                <div class="calendar-day">3</div>
+                <div class="calendar-day">4</div>
+                <div class="calendar-day today">5</div>
+                <div class="calendar-day">6</div>
+                <div class="calendar-day">7</div>
+                <div class="calendar-day">8</div>
+                <div class="calendar-day">9</div>
+                <div class="calendar-day">10</div>
+                <div class="calendar-day">11</div>
+                <div class="calendar-day">12</div>
+                <div class="calendar-day">13</div>
+                <div class="calendar-day">14</div>
+                <div class="calendar-day">15</div>
+                <div class="calendar-day">16</div>
+                <div class="calendar-day">17</div>
+                <div class="calendar-day">18</div>
+                <div class="calendar-day">19</div>
+                <div class="calendar-day">20</div>
+                <div class="calendar-day">21</div>
+                <div class="calendar-day">22</div>
+                <div class="calendar-day">23</div>
+                <div class="calendar-day">24</div>
+                <div class="calendar-day">25</div>
+                <div class="calendar-day">26</div>
+                <div class="calendar-day">27</div>
+                <div class="calendar-day">28</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bank" class="tab-content">
+        <div class="bank">
+            <h3><i class="fas fa-university"></i> Bank Account</h3>
+            <div class="account-info">
+                <h4>$12,345.67</h4>
+                <p>****1234</p>
+            </div>
+            <h4>Recent Transactions</h4>
+            <div class="transaction">
+                <span><i class="fas fa-shopping-cart"></i> Grocery Store</span>
+                <span>-$45.23</span>
+            </div>
+            <div class="transaction positive">
+                <span><i class="fas fa-money-bill-wave"></i> Salary Deposit</span>
+                <span>+$3,000.00</span>
+            </div>
+            <div class="transaction">
+                <span><i class="fas fa-shopping-bag"></i> Online Purchase</span>
+                <span>-$129.99</span>
+            </div>
+            <div class="transaction">
+                <span><i class="fas fa-credit-card"></i> ATM Withdrawal</span>
+                <span>-$100.00</span>
+            </div>
         </div>
     </div>
 
     <script>
-        // this generates random stats
-        function updateStats() {
-            document.getElementById('users').innerText = Math.floor(Math.random() * 500);
-            document.getElementById('sales').innerText = Math.floor(Math.random() * 200);
-            document.getElementById('revenue').innerText = '$' + (Math.random() * 1000).toFixed(2);
+        function randomData(points, max) {
+            return Array.from({length: points}, () => Math.floor(Math.random() * max));
         }
 
-        // this updates everything every 2 seconds
-        setInterval(updateStats, 2000);
-        updateStats();
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        const usersCtx = document.getElementById('usersChart').getContext('2d');
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+
+        const usersChart = new Chart(usersCtx, {
+            type: 'line',
+            data: {
+                labels: ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm'],
+                datasets: [{
+                    label: 'Users',
+                    data: randomData(7, 500),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                    tension: 0.3,
+                    pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const salesChart = new Chart(salesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Product A', 'Product B', 'Product C', 'Product D'],
+                datasets: [{
+                    data: randomData(4, 100),
+                    backgroundColor: ['#3498db', '#2ecc71', '#e67e22', '#9b59b6'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['10am', '11am', '12pm', '1pm', '2pm', '3pm', '4pm'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: randomData(7, 1000),
+                    borderColor: '#e67e22',
+                    backgroundColor: 'rgba(230, 126, 34, 0.2)',
+                    tension: 0.3,
+                    pointBackgroundColor: '#e67e22',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+
+        setInterval(() => {
+            usersChart.data.datasets[0].data = randomData(7, 500);
+            usersChart.update();
+
+            salesChart.data.datasets[0].data = randomData(4, 100);
+            salesChart.update();
+
+            revenueChart.data.datasets[0].data = randomData(7, 1000);
+            revenueChart.update();
+        }, 5000);
+
+     
+        function refreshCharts() {
+            usersChart.data.datasets[0].data = randomData(7, 500);
+            usersChart.update();
+
+            salesChart.data.datasets[0].data = randomData(4, 100);
+            salesChart.update();
+
+            revenueChart.data.datasets[0].data = randomData(7, 1000);
+            revenueChart.update();
+        }
+
+        
+        function resetCharts() {
+            usersChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
+            usersChart.update();
+
+            salesChart.data.datasets[0].data = [0, 0, 0, 0];
+            salesChart.update();
+
+            revenueChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
+            revenueChart.update();
+        }
+
+        function showExportOptions() {
+            const format = prompt('Choose export format:\n1. JSON\n2. PDF\n\nEnter 1 or 2:');
+            if (format === '1') {
+                exportAsJSON();
+            } else if (format === '2') {
+                exportAsPDF();
+            } else {
+                alert('Invalid choice. Please enter 1 for JSON or 2 for PDF.');
+            }
+        }
+
+        function exportAsJSON() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                dashboard: {
+                    activeUsers: {
+                        labels: usersChart.data.labels,
+                        data: usersChart.data.datasets[0].data
+                    },
+                    salesDistribution: {
+                        labels: salesChart.data.labels,
+                        data: salesChart.data.datasets[0].data
+                    },
+                    revenue: {
+                        labels: revenueChart.data.labels,
+                        data: revenueChart.data.datasets[0].data
+                    }
+                }
+            };
+
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = 'dashboard-data-' + new Date().toISOString().split('T')[0] + '.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function exportAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.text('Dashboard Report', 20, 30);
+            doc.setFontSize(12);
+            doc.text('Generated on: ' + new Date().toLocaleString(), 20, 45);
+            let yPosition = 65;
+            const maxWidth = 160;
+            doc.setFontSize(16);
+            doc.text('Active Users', 20, yPosition);
+            yPosition += 10;
+            const usersCanvas = document.getElementById('usersChart');
+            const usersImgData = usersCanvas.toDataURL('image/png');
+            const usersAspectRatio = usersCanvas.width / usersCanvas.height;
+            const usersWidth = Math.min(maxWidth, usersCanvas.width * 0.5);
+            const usersHeight = usersWidth / usersAspectRatio;
+            doc.addImage(usersImgData, 'PNG', 20, yPosition, usersWidth, usersHeight);
+            yPosition += usersHeight + 10;
+            doc.setFontSize(16);
+            doc.text('Sales Distribution', 20, yPosition);
+            yPosition += 10;
+            const salesCanvas = document.getElementById('salesChart');
+            const salesImgData = salesCanvas.toDataURL('image/png');
+            const salesAspectRatio = salesCanvas.width / salesCanvas.height;
+            const salesWidth = Math.min(maxWidth, salesCanvas.width * 0.5);
+            const salesHeight = salesWidth / salesAspectRatio;
+            if (yPosition + salesHeight > 250) {
+                doc.addPage();
+                yPosition = 30;
+                doc.setFontSize(16);
+                doc.text('Sales Distribution', 20, yPosition);
+                yPosition += 10;
+            }
+            doc.addImage(salesImgData, 'PNG', 20, yPosition, salesWidth, salesHeight);
+            yPosition += salesHeight + 10;
+            doc.setFontSize(16);
+            doc.text('Revenue ($)', 20, yPosition);
+            yPosition += 10;
+            const revenueCanvas = document.getElementById('revenueChart');
+            const revenueImgData = revenueCanvas.toDataURL('image/png');
+            const revenueAspectRatio = revenueCanvas.width / revenueCanvas.height;
+            const revenueWidth = Math.min(maxWidth, revenueCanvas.width * 0.5);
+            const revenueHeight = revenueWidth / revenueAspectRatio;
+            if (yPosition + revenueHeight > 250) {
+                doc.addPage();
+                yPosition = 30;
+                doc.setFontSize(16);
+                doc.text('Revenue ($)', 20, yPosition);
+                yPosition += 10;
+            }
+            doc.addImage(revenueImgData, 'PNG', 20, yPosition, revenueWidth, revenueHeight);
+            yPosition += revenueHeight + 15;
+            doc.setFontSize(12);
+            doc.text('Data Summary:', 20, yPosition);
+            yPosition += 15;
+            doc.setFontSize(10);
+            doc.text('Active Users: ' + usersChart.data.datasets[0].data.join(', '), 20, yPosition);
+            yPosition += 10;
+            doc.text('Sales Distribution: ' + salesChart.data.datasets[0].data.join(', '), 20, yPosition);
+            yPosition += 10;
+            doc.text('Revenue: ' + revenueChart.data.datasets[0].data.join(', '), 20, yPosition);
+            const fileName = 'dashboard-report-' + new Date().toISOString().split('T')[0] + '.pdf';
+            doc.save(fileName);
+        }
     </script>
 </body>
 </html>
